@@ -306,7 +306,6 @@ class FandomPage(object):
         'wiki': self.wiki,
         'lang': self.language,
         'prop': "images",
-        'imlimit': 500
       }
       request = _wiki_request(query_params)
       if 'images' in request['query']['pages'][str(self.pageid)]:
@@ -316,13 +315,17 @@ class FandomPage(object):
 
       if images != []:
         query_params.pop('pageids')
-        query_params['titles'] = images
         query_params['prop'] = 'imageinfo'
-        query_params['iilimit'] = 5000
+        query_params['iilimit'] = 500
         query_params['iiprop'] = 'url'
 
-        request = _wiki_request(query_params)
-        images = [page['imageinfo'][0]['url'] for page in request['query']['pages'].values() if 'imageinfo' in page]
+        images_copy = images.copy()
+        images = []
+        for img in images_copy:
+          query_params_copy = query_params.copy()
+          query_params_copy['titles'] = img
+          request = _wiki_request(query_params_copy)
+          images.extend([page['imageinfo'][0]['url'] for page in request['query']['pages'].values() if 'imageinfo' in page])
 
       self._images = images
     return self._images
